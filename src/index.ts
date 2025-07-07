@@ -22,6 +22,7 @@ import { utilityTools } from './tools/utilities.js';
 
 // Import our resources
 import { domainListResource } from './resources/domain-list.js';
+import { domainAvailabilityResource } from './resources/domain-availability.js';
 
 // Import our prompts
 import { dnsSetupPrompts } from './prompts/dns-setup.js';
@@ -98,6 +99,12 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
         description: domainListResource.description,
         mimeType: domainListResource.mimeType,
       },
+      {
+        uri: domainAvailabilityResource.uri,
+        name: domainAvailabilityResource.name,
+        description: domainAvailabilityResource.description,
+        mimeType: domainAvailabilityResource.mimeType,
+      },
     ],
   };
 });
@@ -113,6 +120,21 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
         {
           uri,
           mimeType: domainListResource.mimeType,
+          text: content,
+        },
+      ],
+    };
+  }
+
+  // Dynamic domain availability resource
+  if (domainAvailabilityResource.matchesUri(uri)) {
+    const domainsPart = domainAvailabilityResource.extractDomains(uri);
+    const content = await domainAvailabilityResource.read(domainsPart);
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: domainAvailabilityResource.mimeType,
           text: content,
         },
       ],
